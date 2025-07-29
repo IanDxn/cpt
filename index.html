@@ -473,13 +473,6 @@
             showCopyNotification();
         }
 
-        function GenerateToTextField() {
-            const domainInput = document.getElementById('domainInput').value;
-            const passwordInput = document.getElementById('passwordInput').value;
-            const hashedInput = document.querySelector('input[name="hashedPassword"]');
-            // Simulate hash generation
-            hashedInput.value = md5(domainInput + passwordInput);
-        }
 
         function Init() {
             const domainInput = document.getElementById('domainInput');
