@@ -460,11 +460,6 @@
             return false;
         }
 
-        function clearPasswordField() {
-            const hashedInput = document.querySelector('input[name="hashedPassword"]"]');
-            hashedInput.value = '';
-        }
-
         function copyHashedPassword() {
             const hashedInput = document.querySelector('input[name="hashedPassword"]');
             if (!hashedInput || hashedInput.value.trim() === '') {
