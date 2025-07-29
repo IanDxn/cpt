@@ -375,10 +375,33 @@
             domain = domain.replace(/^https?:\/\//, '');
             domain = domain.split('/')[0];
             domain = domain.split(':')[0];
+            domain = domain.toLowerCase();
             
-            const domainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+            if (domain.length === 0 || domain.length > 253) {
+                return false;
+            }
             
-            return domainRegex.test(domain) && domain.length <= 253;
+            const domainRegex = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/;
+            
+            if (!domainRegex.test(domain)) {
+                return false;
+            }
+            
+            const parts = domain.split('.');
+            if (parts.length < 2) {
+                return false;
+            }
+            
+            for (let part of parts) {
+                if (part.length === 0 || part.length > 63) {
+                    return false;
+                }
+                if (part.startsWith('-') || part.endsWith('-')) {
+                    return false;
+                }
+            }
+            
+            return true;
         }
 
         function isValidPassword(password) {
@@ -394,6 +417,15 @@
             setTimeout(function() {
                 notification.classList.remove('show');
             }, 4000);
+        }
+
+        function showCopyNotification() {
+            const notification = document.getElementById('copyNotification');
+            notification.classList.add('show');
+            
+            setTimeout(function() {
+                notification.classList.remove('show');
+            }, 3000);
         }
 
         function validateAndGenerate() {
@@ -430,63 +462,42 @@
         }
 
         function clearPasswordField() {
-            const hashedInput = document.querySelector('input[name="hashedPassword"]');
-            if (hashedInput && hashedInput.value.trim() !== '') {
-                document.getElementById('passwordInput').value = '';
-                const passwordPlaceholder = document.getElementById('passwordPlaceholder');
-                if (passwordPlaceholder) {
-                    passwordPlaceholder.classList.remove('hidden');
-                }
-            }
+            const hashedInput = document.querySelector('input[name="hashedPassword"]"]');
+            hashedInput.value = '';
         }
 
         function copyHashedPassword() {
             const hashedInput = document.querySelector('input[name="hashedPassword"]');
-            if (!hashedInput || hashedInput.value.trim() === '') {
-                showErrorNotification('No password to copy. Please generate a hash first.');
-                return;
-            }
-            
             hashedInput.select();
-            hashedInput.setSelectionRange(0, 99999);
-            
-            try {
-                document.execCommand('copy');
-                showcopyNotification();
-            } catch (err) {
-                showErrorNotification('Failed to copy password. Please try again.');
-            }
+            document.execCommand('copy');
+            showCopyNotification();
         }
 
-        function copyNotification() {
-            const notification = document.getElementById('copyNotification');
-            notification.classList.add('show');
-            setTimeout(function() {
-                notification.classList.remove('show');
-            }, 2000);
+        function GenerateToTextField() {
+            const domainInput = document.getElementById('domainInput').value;
+            const passwordInput = document.getElementById('passwordInput').value;
+            const hashedInput = document.querySelector('input[name="hashedPassword"]');
+            // Simulate hash generation
+            hashedInput.value = md5(domainInput + passwordInput);
         }
 
         function Init() {
             const domainInput = document.getElementById('domainInput');
             const passwordInput = document.getElementById('passwordInput');
-            const passwordPlaceholder = document.getElementById('passwordPlaceholder');
-            const domainPlaceholder = document.getElementById('domainPlaceholder');
-
             domainInput.addEventListener('focus', function() {
-                domainPlaceholder.classList.add('hidden');
+                document.getElementById('domainPlaceholder').classList.add('hidden');
             });
             domainInput.addEventListener('blur', function() {
-                if (!domainInput.value) {
-                    domainPlaceholder.classList.remove('hidden');
+                if (domainInput.value.trim() === '') {
+                    document.getElementById('domainPlaceholder').classList.remove('hidden');
                 }
             });
-
             passwordInput.addEventListener('focus', function() {
-                passwordPlaceholder.classList.add('hidden');
+                document.getElementById('passwordPlaceholder').classList.add('hidden');
             });
             passwordInput.addEventListener('blur', function() {
-                if (!passwordInput.value) {
-                    passwordPlaceholder.classList.remove('hidden');
+                if (passwordInput.value === '') {
+                    document.getElementById('passwordPlaceholder').classList.remove('hidden');
                 }
             });
         }
