@@ -12,7 +12,7 @@
 /*
  * Initialize page with default hashing parameters.
  */
-function Init() {
+function Init_O() {
   document.hashform.domain.value = "http://www.example.com/";
   document.hashform.sitePassword.value = "";
   document.hashform.hashedPassword.value = "Press Generate";
@@ -43,4 +43,5 @@ function GenerateToTextField()
 {
   document.hashform.hashedPassword.value = Generate();
   document.hashform.hashedPassword.disabled = false;
+  document.hashform.sitePassword.value = "";
 }
