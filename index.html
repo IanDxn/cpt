@@ -1,7 +1,6 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-
-  <meta name="robots" content="noindex">
   <!--* Remote PwdHash Form
       * An HTML form that calls the JavaScript implementation of PwdHash
       * Version 1.0 Copyright (C) Stanford University 2004-2005
@@ -9,69 +8,345 @@
       * Distributed under the BSD License
       * See http://crypto.stanford.edu/PwdHash for more info.
       *-->
-  <title>Remote PwdHash</title>
-  <script src="md5.js" type="text/javascript"></script>
-  <script src="pwdhash.js" type="text/javascript"></script>
-  <script src="hashed-password.js" type="text/javascript"></script>
-  <script src="domain-extractor.js" type="text/javascript"></script>
-  <link rel="stylesheet" type="text/css" href="pwdhash.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>Remote PwdHash - Password Hash Generator</title>
+    <script src="md5.js" type="text/javascript"></script>
+    <script src="pwdhash.js" type="text/javascript"></script>
+    <script src="hashed-password.js" type="text/javascript"></script>
+    <script src="domain-extractor.js" type="text/javascript"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        .step {
+            margin-bottom: 30px;
+        }
+
+        .step h3 {
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+        }
+
+        .step h3::before {
+            content: "🔐";
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .step:nth-child(1) h3::before {
+            content: "🌐";
+        }
+
+        .step:nth-child(3) h3::before {
+            content: "✨";
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus {
+            outline: none;
+            border-color: #4facfe;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .placeholder-text {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+
+        .placeholder-text.hidden {
+            opacity: 0;
+            transform: translateY(-50%) translateX(-10px);
+        }
+
+        .generate-section {
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px dashed #cbd5e0;
+            text-align: center;
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .generate-btn:active {
+            transform: translateY(0);
+        }
+
+        .explanation {
+            background: #edf2f7;
+            padding: 30px;
+            margin: 30px 0;
+            border-radius: 15px;
+            border-left: 5px solid #4facfe;
+        }
+
+        .explanation h4 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .explanation p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: #4a5568;
+        }
+
+        .explanation code {
+            background: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .footer {
+            background: #2d3748;
+            color: white;
+            text-align: center;
+            padding: 25px;
+        }
+
+        .footer a {
+            color: #4facfe;
+            text-decoration: none;
+            margin: 0 10px;
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            color: #63b3ed;
+        }
+
+        .toggle-link {
+            display: inline-block;
+            margin-top: 15px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .toggle-link:hover {
+            color: #764ba2;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .form-container {
+                padding: 25px;
+            }
+        }
+
+        .icon {
+            display: inline-block;
+            margin-right: 8px;
+        }
+    </style>
 </head>
 <body onLoad="Init();">
-  <h1>Remote PwdHash</h1>
-<BR>
-  <form name="hashform" action="error.html" method="POST"
-  onsubmit="setTimeout('GenerateToTextField()', 0); return false;">
-  <table id="theHashForm"><tr>
-    <td class="stepList">
-    <div class="step" id="theSiteDomain">
-      <h3>Site Address</h3>
-      <p><input type="text" name="domain"></p>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Remote PwdHash</h1>
+            <p>Secure Password Hash Generator</p>
+        </div>
+
+        <div class="form-container">
+            <form name="hashform" action="error.html" method="POST"
+                  onsubmit="setTimeout('GenerateToTextField()', 0); return false;">
+                
+                <div class="step">
+                    <h3>Site Address</h3>
+                    <div class="input-group">
+                        <input type="text" name="domain" id="domainInput">
+                        <span class="placeholder-text" id="domainPlaceholder">e.g., www.example.com or example.com</span>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h3>Site Password</h3>
+                    <div class="input-group">
+                        <input type="password" name="sitePassword" id="passwordInput">
+                        <span class="placeholder-text" id="passwordPlaceholder">Enter your master password</span>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <h3>Hashed Password</h3>
+                    <div class="generate-section">
+                        <div class="input-group">
+                            <input type="text" name="hashedPassword" readonly style="background: white; border-color: #4facfe;">
+                        </div>
+                        <button type="submit" class="generate-btn">
+                            <span class="icon">⚡</span>Generate Hash
+                        </button>
+                        <br>
+                        <a id="theToggleModeLink" href="javascript:ToggleAdvancedMode()" class="toggle-link"></a>
+                    </div>
+                </div>
+            </form>
+
+            <div class="explanation">
+                <h4>📖 How to Use</h4>
+                <p>
+                    This page allows you to obtain the hashed password that would be generated automatically. 
+                    The process of generating the hashed password is performed locally on your machine, without sending any information to server.
+                </p>
+                <p>
+                    When entering site address, you may cut and paste the full URL or simply enter the site name 
+                    (e.g. "www.example.com") or domain name ("example.com"). Only the domain name is actually used.
+                </p>
+                <p>
+                    <strong>⚠️ Warning:</strong> If you are using the PwdHash extension right now to view this page, 
+                    you may experience a double hashing, resulting in an unusable password. You can get around this problem 
+                    by omitting the password prefix (<code>@@</code>) part of your password, but don't get in the habit of doing this at other sites!
+                </p>
+            </div>
+        </div>
+
     </div>
-    <div class="step" id="theSitePassword">
-      <h3>Site Password</h3>
-      <p><input type="password" name="sitePassword"></p>
-    </div>
-    </td>
-  </tr>
-  <tr>
-    <td class="stepList" colspan="2">
-      <div class="step" id="theHashedPassword">
-        <h3>Hashed Password</h3>	
-	  <span id="theGeneratePanel">
-	    <input type="text" name="hashedPassword">
-	    <input type="submit" name"submitButton" value="Generate">
-          </span>
-      <p align="center"><a id="theToggleModeLink" href="javascript:ToggleAdvancedMode()"></a></p>
-      </div>
-    </td>
-  </tr>
-  </table>
-  <div id="theexplanation">
-    <p>
-      This page will allow you to obtain the hashed password 
-      that would be generated automatically by the 
-      <a href="http://crypto.stanford.edu/PwdHash/">PwdHash</a> browser
-      extension. The process of generating the hashed password is performed 
-      locally on your machine, without sending any information to Stanford.
-    </p> 
-    <p>
-      When entering site address, you may cut and paste the full URL
-      or simply enter the site name (e.g. "www.stanford.edu") or
-      domain name ("stanford.edu"). Only the domain name is actually used.
-    </p>
-    <p>
-       If you are using the PwdHash extension right now to view this page,
-       you may experience a double hashing, resulting in an unusable password.
-       You can get around this problem by omitting the password prefix
-       (<tt>@@</tt>) part of your password, but don't get in the 
-       habit of doing this at other sites!
-    </p>
-  </div>
-  </form>
-  <div id="footer">
-    <a href="http://crypto.stanford.edu/PwdHash/">PwdHash home page</a> |
-    <a href="http://pajhome.org.uk/crypt/md5">MD5 implementation</a> |
-    <a href="hashed-password.js">Password hashing source code</a>
-  </div>
+
+    <script>
+        // Handle placeholder text show/hide functionality
+        function setupPlaceholder(inputId, placeholderId) {
+            const input = document.getElementById(inputId);
+            const placeholder = document.getElementById(placeholderId);
+            
+            if (input && placeholder) {
+                // Hide placeholder when input is focused
+                input.addEventListener('focus', function() {
+                    placeholder.classList.add('hidden');
+                });
+                
+                // Show placeholder when input loses focus and is empty
+                input.addEventListener('blur', function() {
+                    if (this.value === '') {
+                        placeholder.classList.remove('hidden');
+                    }
+                });
+                
+                // Hide placeholder when user types
+                input.addEventListener('input', function() {
+                    if (this.value !== '') {
+                        placeholder.classList.add('hidden');
+                    } else {
+                        placeholder.classList.remove('hidden');
+                    }
+                });
+            }
+        }
+
+        // Setup placeholder functionality after page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setupPlaceholder('domainInput', 'domainPlaceholder');
+            setupPlaceholder('passwordInput', 'passwordPlaceholder');
+        });
+
+        // Enhanced initialization function
+        function Init() {
+            // Call original Init function if it exists
+            if (typeof window.originalInit === 'function') {
+                window.originalInit();
+            }
+            
+            // Setup placeholder functionality
+            setupPlaceholder('domainInput', 'domainPlaceholder');
+            setupPlaceholder('passwordInput', 'passwordPlaceholder');
+        }
+    </script>
 </body>
 </html>
