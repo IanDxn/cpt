@@ -267,6 +267,33 @@
         .copy-notification.show {
             opacity: 1;
         }
+
+        .error-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #e53e3e;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            box-shadow: 0 4px 15px rgba(229, 62, 62, 0.4);
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .error-notification.show {
+            opacity: 1;
+        }
+
+        .input-error {
+            border-color: #e53e3e !important;
+            box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1) !important;
+        }
     </style>
 </head>
 <body onLoad="Init();">
@@ -278,7 +305,7 @@
 
         <div class="form-container">
             <form name="hashform" action="error.html" method="POST"
-                  onsubmit="setTimeout('GenerateToTextField()', 0); setTimeout('clearPasswordField()', 500); return false;">
+                  onsubmit="return validateAndGenerate();">
                 
                 <div class="step">
                     <h3>Site Address</h3>
@@ -335,96 +362,101 @@
         ✅ Password copied to clipboard!
     </div>
 
+    <div id="errorNotification" class="error-notification">
+        ❌ <span id="errorMessage"></span>
+    </div>
+
     <script>
-        function clearPasswordField() {
-            const hashedInput = document.querySelector('input[name="hashedPassword"]');
-            if (hashedInput && hashedInput.value.trim() !== '') {
-                document.getElementById('passwordInput').value = '';
-                const passwordPlaceholder = document.getElementById('passwordPlaceholder');
-                if (passwordPlaceholder) {
-                    passwordPlaceholder.classList.remove('hidden');
-                }
+        function isValidDomain(domain) {
+            if (!domain || domain.trim() === '') {
+                return false;
             }
+            
+            domain = domain.replace(/^https?:\/\//, '');
+            domain = domain.split('/')[0];
+            domain = domain.split(':')[0];
+            
+            const domainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+            
+            return domainRegex.test(domain) && domain.length <= 253;
+        }
+
+        function isValidPassword(password) {
+            return password && password.length >= 6 && password.length <= 128;
+        }
+
+        function showErrorNotification(message) {
+            const notification = document.getElementById('errorNotification');
+            const messageElement = document.getElementById('errorMessage');
+            messageElement.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(function() {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+
+        function validateAndGenerate() {
+            const domainInput = document.getElementById('domainInput');
+            const passwordInput = document.getElementById('passwordInput');
+            
+            domainInput.classList.remove('input-error');
+            passwordInput.classList.remove('input-error');
+            
+            const domain = domainInput.value.trim();
+            const password = passwordInput.value;
+            
+            if (!isValidDomain(domain)) {
+                domainInput.classList.add('input-error');
+                showErrorNotification('Please enter a valid domain name (e.g., example.com or www.example.com)');
+                domainInput.focus();
+                return false;
+            }
+            
+            if (!isValidPassword(password)) {
+                passwordInput.classList.add('input-error');
+                if (!password || password.length < 6) {
+                    showErrorNotification('Password must be at least 6 characters long');
+                } else {
+                    showErrorNotification('Password must not exceed 128 characters');
+                }
+                passwordInput.focus();
+                return false;
+            }
+            
+            setTimeout('GenerateToTextField()', 0);
+            setTimeout('clearPasswordField()', 500);
+            return false;
+        }
+
+        function clearPasswordField() {
+            document.getElementById('passwordInput').value = '';
+        }
+
+        function GenerateToTextField() {
+            const domain = document.getElementById('domainInput').value.trim();
+            const password = document.getElementById('passwordInput').value;
+            const hashedPassword = pwdHash(domain, password); 
+            document.getElementsByName('hashedPassword')[0].value = hashedPassword;
         }
 
         function copyHashedPassword() {
-            const hashedInput = document.querySelector('input[name="hashedPassword"]');
-            if (hashedInput && hashedInput.value.trim() !== '') {
-                hashedInput.select();
-                hashedInput.setSelectionRange(0, 99999);
-                
-                try {
-                    document.execCommand('copy');
-                    showCopyNotification();
-                } catch (err) {
-                    if (navigator.clipboard) {
-                        navigator.clipboard.writeText(hashedInput.value).then(function() {
-                            showCopyNotification();
-                        }).catch(function(err) {
-                            console.error('Failed to copy: ', err);
-                        });
-                    }
-                }
-                
-                hashedInput.setSelectionRange(0, 0);
-                hashedInput.blur();
-            }
+            const hashedInput = document.getElementsByName('hashedPassword')[0];
+            hashedInput.select();
+            document.execCommand('copy');
+            showCopyNotification();
         }
 
         function showCopyNotification() {
             const notification = document.getElementById('copyNotification');
             notification.classList.add('show');
-            
             setTimeout(function() {
                 notification.classList.remove('show');
-            }, 3000);
+            }, 2000);
         }
 
-        // Handle placeholder text show/hide functionality
-        function setupPlaceholder(inputId, placeholderId) {
-            const input = document.getElementById(inputId);
-            const placeholder = document.getElementById(placeholderId);
-            
-            if (input && placeholder) {
-                // Hide placeholder when input is focused
-                input.addEventListener('focus', function() {
-                    placeholder.classList.add('hidden');
-                });
-                
-                // Show placeholder when input loses focus and is empty
-                input.addEventListener('blur', function() {
-                    if (this.value === '') {
-                        placeholder.classList.remove('hidden');
-                    }
-                });
-                
-                // Hide placeholder when user types
-                input.addEventListener('input', function() {
-                    if (this.value !== '') {
-                        placeholder.classList.add('hidden');
-                    } else {
-                        placeholder.classList.remove('hidden');
-                    }
-                });
-            }
-        }
-
-        // Setup placeholder functionality after page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            setupPlaceholder('domainInput', 'domainPlaceholder');
-            setupPlaceholder('passwordInput', 'passwordPlaceholder');
-        });
-
-        // Enhanced initialization function
         function Init() {
-            // Call original Init function if it exists
-            if (typeof window.originalInit === 'function') {
-                window.originalInit();
-            }
-            
-            // Setup placeholder functionality
-            setupPlaceholder('domainInput', 'domainPlaceholder');
-            setupPlaceholder('passwordInput', 'passwordPlaceholder');
+            document.getElementById('domainInput').focus();
         }
     </script>
 </body>
