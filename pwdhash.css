@@ -99,3 +99,11 @@ div.footer
 {
   font-color: red;
 }
+input[type="text"],
+input[type="password"],
+input[type="submit"] {
+  font-size: 1.5em;
+  padding: 0.5em 1em;
+  width: 90%;
+  box-sizing: border-box;
+}
