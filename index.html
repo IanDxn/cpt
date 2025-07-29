@@ -468,10 +468,16 @@
 
         function copyHashedPassword() {
             const hashedInput = document.querySelector('input[name="hashedPassword"]');
+            if (!hashedInput || hashedInput.value.trim() === '') {
+                showErrorNotification('No password to copy. Please generate a hash first.');
+                return;
+            }
+            
             hashedInput.select();
             document.execCommand('copy');
             showCopyNotification();
         }
+
 
 
         function Init() {
