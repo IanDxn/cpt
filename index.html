@@ -236,6 +236,37 @@
             display: inline-block;
             margin-right: 8px;
         }
+
+        .copy-hint {
+            color: #667eea;
+            font-size: 0.9em;
+            margin-left: 10px;
+            font-weight: 500;
+        }
+
+        .hashed-input {
+            cursor: pointer !important;
+        }
+
+        .copy-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #48bb78;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);
+        }
+
+        .copy-notification.show {
+            opacity: 1;
+        }
     </style>
 </head>
 <body onLoad="Init();">
@@ -247,7 +278,7 @@
 
         <div class="form-container">
             <form name="hashform" action="error.html" method="POST"
-                  onsubmit="setTimeout('GenerateToTextField()', 0); return false;">
+                  onsubmit="setTimeout('GenerateToTextField()', 0); setTimeout('clearPasswordField()', 500); return false;">
                 
                 <div class="step">
                     <h3>Site Address</h3>
@@ -266,10 +297,10 @@
                 </div>
 
                 <div class="step">
-                    <h3>Hashed Password</h3>
+                    <h3>Hashed Password <span class="copy-hint">👇 Click to copy password</span></h3>
                     <div class="generate-section">
                         <div class="input-group">
-                            <input type="text" name="hashedPassword" readonly style="background: white; border-color: #4facfe;">
+                            <input type="text" name="hashedPassword" class="hashed-input" readonly style="background: white; border-color: #4facfe;" onclick="copyHashedPassword()">
                         </div>
                         <button type="submit" class="generate-btn">
                             <span class="icon">⚡</span>Generate Hash
@@ -300,7 +331,55 @@
 
     </div>
 
+    <div id="copyNotification" class="copy-notification">
+        ✅ Password copied to clipboard!
+    </div>
+
     <script>
+        function clearPasswordField() {
+            const hashedInput = document.querySelector('input[name="hashedPassword"]');
+            if (hashedInput && hashedInput.value.trim() !== '') {
+                document.getElementById('passwordInput').value = '';
+                const passwordPlaceholder = document.getElementById('passwordPlaceholder');
+                if (passwordPlaceholder) {
+                    passwordPlaceholder.classList.remove('hidden');
+                }
+            }
+        }
+
+        function copyHashedPassword() {
+            const hashedInput = document.querySelector('input[name="hashedPassword"]');
+            if (hashedInput && hashedInput.value.trim() !== '') {
+                hashedInput.select();
+                hashedInput.setSelectionRange(0, 99999);
+                
+                try {
+                    document.execCommand('copy');
+                    showCopyNotification();
+                } catch (err) {
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(hashedInput.value).then(function() {
+                            showCopyNotification();
+                        }).catch(function(err) {
+                            console.error('Failed to copy: ', err);
+                        });
+                    }
+                }
+                
+                hashedInput.setSelectionRange(0, 0);
+                hashedInput.blur();
+            }
+        }
+
+        function showCopyNotification() {
+            const notification = document.getElementById('copyNotification');
+            notification.classList.add('show');
+            
+            setTimeout(function() {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
         // Handle placeholder text show/hide functionality
         function setupPlaceholder(inputId, placeholderId) {
             const input = document.getElementById(inputId);
