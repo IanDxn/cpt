@@ -464,8 +464,8 @@
             
             if (!isValidPassword(password)) {
                 passwordInput.classList.add('input-error');
-                if (!password || password.length < 6) {
-                    showErrorNotification('Password must be at least 6 characters long');
+                if (!password || password.length < 8) {
+                    showErrorNotification('Password must be at least 8 characters long');
                 } else {
                     showErrorNotification('Password must not exceed 128 characters');
                 }
